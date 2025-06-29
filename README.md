@@ -39,16 +39,19 @@ Cette API permet d’accéder en temps réel aux horaires, retards, causes de pe
 1. **Cloner le dépôt** :
 
 ```bash
-git clone https://github.com/<utilisateur>/<repo>.git
-cd <repo>
+git clone https://github.com/Mastocodeur/sncf-project.git
+cd sncf-project
 uv venv
 source .venv/bin/activate
 uv pip install -r pyproject.toml
 ```
 
 2. **Ajouter un fichier .env à la racine** :
+
+```bash
 SNCF_API_KEY=ta_cle_api_sncf
 EMAIL_DEST=ton_adresse_email@example.com
+```
 
 3. Placer le fichier `credentials.json` (Gmail OAuth) à la racine
 
@@ -124,4 +127,5 @@ streamlit run src/main.py
 
 ## 📬 Alerte automatique par e-mail
 En cas de retard détecté, un e-mail est envoyé automatiquement grâce à l’API Gmail.
-L'adresse destinataire est configurable via EMAIL_DEST dans le fichier .env.
+
+L'adresse destinataire est configurable via `EMAIL_DEST` dans le fichier `.env`.
