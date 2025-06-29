@@ -1,0 +1,35 @@
+# Environnement Python
+.venv/
+src/__pycache__
+src/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+# Notebooks
+.ipynb_checkpoints/
+
+
+# Credentials sensibles
+credentials.json
+token.pickle
+emails.json
+
+# Fichiers temporaires / logs
+*.log
+*.csv
+data/
+.env
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Dépendances
+*.egg-info/
+dist/
+build/
+
+# Fichiers de Streamlit
+.streamlit/config.toml

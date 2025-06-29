@@ -1,0 +1,18 @@
+[project]
+name = "sncf"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.46.0",
+    "requests>=2.32.4",
+    "pandas>=2.3.0",
+    "datetime>=5.5",
+    "google-api-python-client>=2.172.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.2",
+    "streamlit-autorefresh>=1.0.1",
+    "python-dotenv>=1.1.0",
+    "ipykernel>=6.29.5",
+]
