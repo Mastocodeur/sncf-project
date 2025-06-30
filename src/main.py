@@ -30,7 +30,7 @@ st_autorefresh(interval=600000, key="auto_refresh")
 st.title("🚆 Suivi TER Nice Riquier ⇄ Monaco Monte Carlo")
 
 # Formulaire d'inscription par email pour recevoir les alertes de retard
-st.subheader("✉️ S'inscrire pour recevoir les alertes retard")
+st.subheader("✉️ S'inscrire pour recevoir les alertes des retards de votre trajet ZOU")
 with st.form("email_form"):
     new_email = st.text_input("Adresse e-mail", placeholder="exemple@gmail.com")
     submitted = st.form_submit_button("S'inscrire")
