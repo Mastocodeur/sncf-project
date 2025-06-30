@@ -15,7 +15,10 @@ __pycache__/
 credentials.json
 token.pickle
 emails.json
-
+token.b64.txt
+credentials.b64.txt
+suivi-sncf-gsheet.json
+gsheet.txt
 # Fichiers temporaires / logs
 *.log
 *.csv
