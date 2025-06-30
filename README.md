@@ -2,6 +2,9 @@
 
 Application Streamlit pour suivre en temps réel les trains entre **Nice Riquier** et **Monaco Monte Carlo**, avec visualisation des horaires et alertes e-mail en cas de retard.
 
+
+Vous pourrez trouver l'application ici : https://my-zou-way.streamlit.app/
+
 ---
 
 ## 🎯 Objectif
