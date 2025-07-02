@@ -26,10 +26,9 @@ st.set_page_config(page_title="Suivi TER Nice ⇄ Monaco", layout="wide")
 # Rafraîchissement automatique toutes les 10 minutes
 st_autorefresh(interval=600000, key="auto_refresh")
 
-# Titre principal
 st.title("🚆 Suivi TER Nice Riquier ⇄ Monaco Monte Carlo")
 
-# Formulaire d'inscription par email pour recevoir les alertes de retard
+# Formulaire d'inscription e-mail
 st.subheader("✉️ S'inscrire pour recevoir les alertes des retards de votre trajet ZOU")
 with st.form("email_form"):
     new_email = st.text_input("Adresse e-mail", placeholder="exemple@gmail.com")
@@ -41,46 +40,45 @@ with st.form("email_form"):
         else:
             st.warning("Adresse invalide.")
 
-# Affichage de la localisation des gares
+# Carte des gares
 st.subheader("📍 Localisation des gares")
 for name, data in stations.items():
     maps_url = f"https://www.google.com/maps/search/?api=1&query={data['lat']},{data['lon']}"
     st.markdown(f"- **[{name}]({maps_url})** ([{data['lat']}, {data['lon']}]) 🌍")
 
-# Carte des gares avec Streamlit
 st.map(pd.DataFrame([{"lat": s["lat"], "lon": s["lon"]} for s in stations.values()]), zoom=11)
 
-# Bouton manuel de rafraîchissement
+# Rafraîchissement
 refresh_clicked = st.button("🔄 Rafraîchir maintenant")
 
-# Récupération des horaires si déclenché manuellement ou auto-refresh
 if refresh_clicked or st.session_state.get("auto_refresh_ran", False) is False:
     with st.spinner("Chargement des horaires..."):
         st.session_state["auto_refresh_ran"] = True
 
-        # Requête des trajets aller/retour
         nice_to_monaco = get_trains(stations["Nice Riquier"]["id"], stations["Monaco Monte Carlo"]["id"])
         monaco_to_nice = get_trains(stations["Monaco Monte Carlo"]["id"], stations["Nice Riquier"]["id"])
 
         col1, col2 = st.columns(2)
 
-        def extract_delay(journey):
+        def extract_delay(journey, stop_id_prefix):
             """
-            Calcule le retard en minutes basé sur la différence entre l'horaire théorique
-            et l'horaire réel du premier arrêt public_transport.
+            Calcule le retard en minutes à partir du stop_point correspondant à la gare de départ réelle.
             """
             section = next((s for s in journey.get("sections", []) if s.get("type") == "public_transport"), None)
             if not section:
                 return 0
-            try:
-                times = section['stop_date_times'][0]
-                base = datetime.strptime(times['base_departure_date_time'], "%Y%m%dT%H%M%S")
-                real = datetime.strptime(times['departure_date_time'], "%Y%m%dT%H%M%S")
-                return int((real - base).total_seconds() / 60)
-            except Exception:
-                return 0
+            for stop in section.get("stop_date_times", []):
+                stop_id = stop.get("stop_point", {}).get("id", "")
+                if stop_id_prefix in stop_id:
+                    try:
+                        base = datetime.strptime(stop["base_departure_date_time"], "%Y%m%dT%H%M%S")
+                        real = datetime.strptime(stop["departure_date_time"], "%Y%m%dT%H%M%S")
+                        return int((real - base).total_seconds() / 60)
+                    except Exception:
+                        return 0
+            return 0
 
-        def display_journeys(journeys, label):
+        def display_journeys(journeys, label, stop_id_prefix):
             """
             Affiche les horaires de trajets.
             En cas de retard, envoie une alerte aux emails récupérés depuis Google Sheets.
@@ -90,7 +88,7 @@ if refresh_clicked or st.session_state.get("auto_refresh_ran", False) is False:
                 arr = datetime.strptime(journey["arrival_date_time"], "%Y%m%dT%H%M%S")
                 duration = (arr - dep).seconds // 60
 
-                delay = extract_delay(journey)
+                delay = extract_delay(journey, stop_id_prefix)
                 disruption_msg = journey.get("disruptions", [{}])[0].get("description", "")
 
                 sections = journey.get("sections", [])
@@ -104,7 +102,6 @@ if refresh_clicked or st.session_state.get("auto_refresh_ran", False) is False:
                     if disruption_msg:
                         delay_info += f"<span style='color:lightgray;'>ℹ️ {disruption_msg}</span>"
 
-                    # Envoi d'un mail personnalisé pour chaque adresse inscrite
                     for email in get_sheet_values():
                         send_gmail(
                             subject=f"🚨 Retard détecté sur le trajet : {label}",
@@ -123,7 +120,6 @@ Trajet concerné : {label}
                 else:
                     delay_info = "<span style='color:lightgreen;'>🟢 À l'heure</span>"
 
-                # Affichage visuel de chaque trajet
                 style = f"""
                 <div style="background-color: #111; color: white; padding: 12px; margin-bottom: 10px;
                             border-radius: 10px; font-family: 'Courier New', monospace;
@@ -136,11 +132,10 @@ Trajet concerné : {label}
                 """
                 st.markdown(style, unsafe_allow_html=True)
 
-        # Deux colonnes : aller et retour
         with col1:
             st.subheader("⬅️ Nice Riquier → Monaco")
-            display_journeys(nice_to_monaco, "Nice → Monaco")
+            display_journeys(nice_to_monaco, "Nice → Monaco", stop_id_prefix="87756353")
 
         with col2:
             st.subheader("➡️ Monaco → Nice Riquier")
-            display_journeys(monaco_to_nice, "Monaco → Nice")
+            display_journeys(monaco_to_nice, "Monaco → Nice", stop_id_prefix="87756403")
