@@ -4,6 +4,7 @@ Application Streamlit pour le suivi des trains TER entre Nice Riquier et Monaco 
 - Détecte les retards et envoie une alerte par email aux utilisateurs inscrits
 - Permet l'inscription via formulaire, stockée dans Google Sheets
 - Récupère les données SNCF via l'API Navitia
+- Bonne lecture
 """
 
 import streamlit as st
