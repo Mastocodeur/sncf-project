@@ -2,26 +2,23 @@ import os
 import io
 import pickle
 import base64
-import tempfile
 from email.mime.text import MIMEText
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-from email_list import load_emails
 from google.auth.exceptions import RefreshError
 from dotenv import load_dotenv
-from sheet_emails import get_sheet_values 
+from sheet_emails import get_sheet_values
+from typing import Optional
 
 load_dotenv()
-TOKEN_PATH = os.path.join(os.path.dirname(__file__), '..', 'token.pickle')
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 def gmail_authenticate():
-    token_b64 = os.getenv("TOKEN_BASE64")
+    token_b64 = os.getenv("TOKEN_PICKLE_B64")
     if not token_b64:
-        raise RuntimeError("❌ TOKEN_BASE64 non défini dans .env")
+        raise RuntimeError("❌ TOKEN_PICKLE_B64 non défini dans .env")
 
     try:
-        # Charger depuis la chaîne base64
         token_bytes = base64.b64decode(token_b64)
         creds = pickle.load(io.BytesIO(token_bytes))
 
@@ -35,15 +32,15 @@ def gmail_authenticate():
     except Exception as e:
         raise RuntimeError(f"❌ Erreur d’authentification Gmail : {e}")
 
-def send_gmail(subject, body, to_email=None):
+def send_gmail(subject: str, body: str, to_email: Optional[str] = None):
     """
     Envoie un e-mail via Gmail API.
-    Si to_email est None, envoie à tous les abonnés dans Google Sheets.
+    Si `to_email` est None, envoie à tous les abonnés Google Sheets.
     """
     try:
         service = gmail_authenticate()
-    except RefreshError as e:
-        print("❌ Erreur Gmail RefreshToken expiré :", e)
+    except Exception as e:
+        print("❌ Erreur Gmail :", e)
         return
 
     recipients = [to_email] if to_email else get_sheet_values()
@@ -55,5 +52,6 @@ def send_gmail(subject, body, to_email=None):
         encoded = {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
         try:
             service.users().messages().send(userId="me", body=encoded).execute()
+            print(f"📤 Envoi réussi à {email}")
         except Exception as e:
             print(f"❌ Échec de l'envoi à {email} : {e}")
